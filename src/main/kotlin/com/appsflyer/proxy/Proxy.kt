@@ -74,6 +74,8 @@ class Proxy {
                             clientBuilder.followRedirects(followRedirects)
                                 .followSslRedirects(followRedirects)
                         }
+
+                        override fun getResponseMessage() = response.message
                     }
                 }
             }
