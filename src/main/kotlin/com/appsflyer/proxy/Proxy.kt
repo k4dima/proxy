@@ -10,11 +10,11 @@ import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.net.URLStreamHandler
 import java.util.*
-import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.LinkedBlockingQueue
 import javax.net.ssl.HttpsURLConnection
 
 class Proxy {
-    companion object : HashMap<String, LinkedBlockingDeque<Pair<Request, Response>>>() {
+    companion object : HashMap<String, LinkedBlockingQueue<Pair<Request, Response>>>() {
         @JvmStatic
         val subs = mutableMapOf<String, (Request, Response) -> Unit>()
         val mocks = mutableMapOf<String, (Request) -> Response>()
@@ -81,9 +81,9 @@ class Proxy {
             }
         }
 
-        override fun get(key: String) = super.get(key) ?: LinkedBlockingDeque<Pair<Request, Response>>()
+        override fun get(key: String) = super.get(key) ?: LinkedBlockingQueue<Pair<Request, Response>>()
             .apply {
-                subs[key] = { request, response -> offerLast(Pair(request, response)) }
+                subs[key] = { request, response -> offer(Pair(request, response)) }
                 put(key, this)
             }
     }
