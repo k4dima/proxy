@@ -14,9 +14,7 @@ import java.util.concurrent.LinkedBlockingQueue
 import javax.net.ssl.HttpsURLConnection
 
 class Proxy {
-    companion object : HashMap<String, LinkedBlockingQueue<Pair<Request, Response>>>() {
-        @JvmStatic
-        val subs = mutableMapOf<String, (Request, Response) -> Unit>()
+    companion object : HashMap<String, LinkedBlockingQueue<Response>>() {
         val mocks = mutableMapOf<String, (Request) -> Response>()
 
         init {
@@ -26,6 +24,7 @@ class Proxy {
                         val clientBuilder = OkHttpClient.Builder()
                         val byteArrayOutputStream = ByteArrayOutputStream()
                         val response by lazy {
+                            val host = url.host
                             Request.Builder()
                                 .also {
                                     if (byteArrayOutputStream.size() != 0) it.post(
@@ -37,11 +36,11 @@ class Proxy {
                                 .headers(headers.build())
                                 .build()
                                 .let { request ->
-                                    mocks[url.host]?.invoke(request) ?: clientBuilder.build()
+                                    mocks[host]?.invoke(request) ?: clientBuilder.build()
                                         .newCall(request)
                                         .execute()
                                 }
-                                .also { subs[url.host]?.invoke(it.request, it) }
+                                .also { if (containsKey(host)) get(host).offer(it) }
                         }
                         val headers = Headers.Builder()
                         override fun connect() {
@@ -81,10 +80,6 @@ class Proxy {
             }
         }
 
-        override fun get(key: String) = super.get(key) ?: LinkedBlockingQueue<Pair<Request, Response>>()
-            .apply {
-                subs[key] = { request, response -> offer(Pair(request, response)) }
-                put(key, this)
-            }
+        override fun get(key: String) = super.get(key) ?: LinkedBlockingQueue<Response>().apply { put(key, this) }
     }
 }
