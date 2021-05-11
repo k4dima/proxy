@@ -19,14 +19,19 @@ class Proxy {
                 object : URLStreamHandler() {
                     override fun openConnection(url: URL) = object : HttpsURLConnection(url) {
                         val clientBuilder = OkHttpClient.Builder()
-                            /*.addNetworkInterceptor(Interceptor {
-                                it.proceed(
-                                    it.request()
-                                        .newBuilder()
-                                        .removeHeader("User-Agent")
-                                        .build()
-                                )
-                            })*/
+                            .addNetworkInterceptor(Interceptor { chain ->
+                                chain.request()
+                                    .let { request ->
+                                        request.header("User-Agent")
+                                            .let {
+                                                if (it != null && it.contains("okhttp")) request.newBuilder()
+                                                        .removeHeader("User-Agent")
+                                                        .build()
+                                                else request
+                                            }
+                                    }
+                                    .let { chain.proceed(it) }
+                            })
                         val byteArrayOutputStream = ByteArrayOutputStream()
                         val response by lazy {
                             val host = url.host
