@@ -23,7 +23,7 @@ class Proxy {
                                 it.proceed(
                                     it.request()
                                         .newBuilder()
-                                        .header("User-Agent", "COOL APP 9000")
+                                        .removeHeader("User-Agent")
                                         .build()
                                 )
                             })
