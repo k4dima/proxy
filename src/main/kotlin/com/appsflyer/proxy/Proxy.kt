@@ -1,11 +1,8 @@
 package com.appsflyer.proxy
 
-import okhttp3.Headers
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import okhttp3.Response
 import java.io.ByteArrayOutputStream
 import java.net.URL
 import java.net.URLStreamHandler
@@ -22,6 +19,14 @@ class Proxy {
                 object : URLStreamHandler() {
                     override fun openConnection(url: URL) = object : HttpsURLConnection(url) {
                         val clientBuilder = OkHttpClient.Builder()
+                            .addNetworkInterceptor(Interceptor {
+                                it.proceed(
+                                    it.request()
+                                        .newBuilder()
+                                        .header("User-Agent", "COOL APP 9000")
+                                        .build()
+                                )
+                            })
                         val byteArrayOutputStream = ByteArrayOutputStream()
                         val response by lazy {
                             val host = url.host
