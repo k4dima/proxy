@@ -1,4 +1,4 @@
-# proxy
+# proxy (for internal use only)
 
 [![](https://jitpack.io/v/afdima/proxy.svg?label=Release)](https://jitpack.io/#afdima/proxy)
 
